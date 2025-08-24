@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://robansuini.com/sitemap.xml
+
+# Disallow Jekyll source files and configuration
+Disallow: /_layouts/
+Disallow: /_posts/
+Disallow: /_config.yml
+Disallow: /Gemfile
+Disallow: /.gitignore
+Disallow: /.bundle/
+Disallow: /vendor/
+
+# Disallow any potential admin areas
+Disallow: /admin/
+Disallow: /wp-admin/
+Disallow: /wp-includes/

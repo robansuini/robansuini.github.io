@@ -1,6 +1,55 @@
+# Site settings
+title: "Roberto Ansuini - Tech & Leadership"
+description: "Personal website of Roberto Ansuini - Software Engineering Leader, technology enthusiast"
+url: "https://robansuini.com"
+baseurl: ""
+
+# Feed settings
+feed:
+  path: feed.xml
+
+# Author information
+author:
+  name: "Roberto Ansuini"
+  email: "contact@nsuini.com"
+
+# Build settings
 theme: jekyll-theme-hacker
-google_analytics: UA-21477589-5
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Collections
+collections:
+  posts:
+    output: true
+    permalink: /blog/:year/:month/:day/:title/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "default"
+      author: "Roberto Ansuini"
+
+# Social media
 twitter_url: https://x.com/robansuini
-github_username:      robansuini
-linkedin_username:    robansuini
-medium_publication:   robansuini-tech-and-stuff
+github_username: robansuini
+linkedin_username: robansuini
+medium_publication: robansuini-tech-and-stuff
+
+# Analytics
+google_analytics: UA-21477589-5
+
+# Newsletter
+newsletter_url: https://the.leadingintech.email/subscribe?utm_campaign=robansuini&utm_source=github
+
+# Pagination
+paginate: 5
+paginate_path: "/blog/page:num/"
+
+# Markdown settings
+markdown: kramdown
+highlighter: rouge
