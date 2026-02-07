@@ -1,28 +1,48 @@
-# Roberto Ansuini
+# robansuini.com
 
-## 👋 About Me
+Personal website of Roberto Ansuini - Engineering manager, leadership toolkit creator, and newsletter writer.
 
-Hey there! I'm Roberto Ansuini, a technology enthusiast and developer passionate about building innovative solutions. This is my personal space where I share thoughts on tech, development, and everything in between.
+## 🌐 Live Site
 
-## 🚀 What I Do
+**https://robansuini.com**
 
-- **Engineering Leadership** - Leading and mentoring development teams to deliver high-quality software
-- **Technical Strategy** - Architecting scalable solutions and making technology decisions
-- **Team Development** - Growing leadership from within the team and fostering collaborative environments
-- **Process Improvement** - Optimizing development workflows and engineering practices
-- **Tech Writing** - Sharing leadership insights and engineering management experiences
+## 🏗️ Tech Stack
 
-## 📝 Latest Posts
+- **Pure HTML/CSS** - No build process, no dependencies
+- **GitHub Pages** - Deployed automatically from `master` branch
+- **Font Awesome** - Icons
+- **Plausible Analytics** - Privacy-friendly analytics
 
-Check out my latest thoughts on technology and leadership on the **[leadingInTech newsletter](https://the.leadingintech.email/subscribe?utm_campaign=robansuini&utm_source=github)**
-## <i class="fa-solid fa-share-nodes"></i> Stay Connected
+## 📝 Content
 
-<i class="fa-brands fa-x-twitter"></i> [Twitter/X](https://x.com/robansuini)
+- **About**: Engineering leadership journey (15+ years)
+- **Projects**: 
+  - [leadingin.tech](https://leadingin.tech) - Toolkit for engineering leaders
+  - [the.leadingintech.email](https://the.leadingintech.email) - Weekly newsletter on leadership
+- **Newsletter CTA**: Prominently featured signup
 
-<i class="fa-brands fa-linkedin"></i> [LinkedIn](https://linkedin.com/in/robansuini)
+## 🚀 Development
 
-<i class="fa-brands fa-github"></i> [GitHub](https://github.com/robansuini)
+**Local preview:**
+```bash
+python3 -m http.server 8000
+# Visit http://localhost:8000
+```
+
+**Deploy:**
+- Push/merge to `master` → auto-deploys to GitHub Pages
+- Deployment takes ~1-2 minutes
+
+## 📊 Performance
+
+- Fast load times (~250ms)
+- Mobile-responsive
+- Minimal dependencies (3 resources)
+
+## 📄 License
+
+Personal site - all rights reserved.
 
 ---
 
-*This is the seventh iteration of my personal site - always evolving, always learning!*
+**Last updated:** February 2026 (v8 - Modern redesign)
