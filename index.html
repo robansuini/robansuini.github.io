@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roberto Ansuini - Engineering Leadership & Tools</title>
+    <meta name="description" content="Engineering manager since 2011. Building tools to help engineering leaders grow their teams. Venezuelan living in Madrid.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script async defer data-domain="robansuini.com" src="https://robansuini-work.nsuini.workers.dev/js/script.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --text-dark: #1e293b;
+            --text-mid: #475569;
+            --text-light: #64748b;
+            --bg: #ffffff;
+            --bg-alt: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background: var(--bg);
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        header {
+            padding: 80px 0 60px;
+        }
+
+        .header-content h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .header-content .tagline {
+            font-size: 1.25rem;
+            color: var(--text-mid);
+            margin-bottom: 24px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 20px;
+            margin-top: 24px;
+        }
+
+        .social-links a {
+            color: var(--text-mid);
+            font-size: 1.5rem;
+            transition: color 0.2s;
+        }
+
+        .social-links a:hover {
+            color: var(--primary);
+        }
+
+        section {
+            margin-bottom: 64px;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: var(--text-dark);
+        }
+
+        p {
+            font-size: 1.125rem;
+            color: var(--text-mid);
+            margin-bottom: 16px;
+        }
+
+        .about-intro {
+            font-size: 1.25rem;
+            line-height: 1.7;
+            color: var(--text-dark);
+        }
+
+        .project-card {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .project-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        }
+
+        .project-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .project-card .project-meta {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+
+        .project-card p {
+            font-size: 1.05rem;
+            margin-bottom: 16px;
+        }
+
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: gap 0.2s;
+        }
+
+        .project-link:hover {
+            gap: 10px;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin: 64px 0;
+        }
+
+        .cta-box h3 {
+            font-size: 1.75rem;
+            margin-bottom: 12px;
+        }
+
+        .cta-box p {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: white;
+            color: var(--primary);
+            padding: 12px 28px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 640px) {
+            .header-content h1 {
+                font-size: 2rem;
+            }
+            
+            .header-content .tagline {
+                font-size: 1.1rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .project-card {
+                padding: 20px;
+            }
+
+            .cta-box {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <h1>Roberto Ansuini</h1>
+                <p class="tagline">Engineering manager since 2011. Building tools to help engineering leaders grow their teams.</p>
+                <div class="social-links">
+                    <a href="https://x.com/robansuini" title="Twitter/X" target="_blank"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="https://linkedin.com/in/robansuini" title="LinkedIn" target="_blank"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="https://github.com/robansuini" title="GitHub" target="_blank"><i class="fa-brands fa-github"></i></a>
+                </div>
+            </div>
+        </header>
+
+        <section id="about">
+            <h2>About</h2>
+            <p class="about-intro">
+                I'm a Venezuelan engineer living in Madrid, helping engineering managers lead better teams. After 15+ years managing teams, I've learned that most leadership challenges aren't technical—they're about seeing your own blindspots and building the right guardrails.
+            </p>
+            <p>
+                That's why I'm building <strong>leadingin.tech</strong>—a practical toolkit for engineering leaders who want to grow without burning out. No fluff, no theory. Just tools and insights that actually help.
+            </p>
+        </section>
+
+        <section id="projects">
+            <h2>What I'm Building</h2>
+            
+            <div class="project-card">
+                <h3>leadingin.tech</h3>
+                <p class="project-meta">Toolkit for Engineering Leaders</p>
+                <p>
+                    A collection of practical tools, frameworks, and resources to help engineering managers grow their teams and themselves. Built from real experience, not theory.
+                </p>
+                <a href="https://leadingin.tech" class="project-link" target="_blank">
+                    Visit the toolkit <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="project-card">
+                <h3>the.leadingintech.email</h3>
+                <p class="project-meta">Newsletter on Leadership in Tech</p>
+                <p>
+                    Weekly insights on engineering leadership, team dynamics, and the challenges nobody warns you about. Personal observations, not prescriptive how-tos.
+                </p>
+                <a href="https://the.leadingintech.email" class="project-link" target="_blank">
+                    Read the newsletter <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <div class="cta-box">
+            <h3>Get leadership insights in your inbox</h3>
+            <p>Real challenges, practical approaches, no fluff. Delivered weekly.</p>
+            <a href="https://the.leadingintech.email/subscribe?utm_campaign=robansuini&utm_source=website" class="btn">
+                Subscribe to the Newsletter
+            </a>
+        </div>
+
+        <footer>
+            <p>© 2025 Roberto Ansuini · Always evolving, always learning</p>
+        </footer>
+    </div>
+</body>
+</html>
