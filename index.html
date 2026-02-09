@@ -264,8 +264,34 @@
         </div>
 
         <footer>
-            <p>© 2025 Roberto Ansuini · Always evolving, always learning</p>
+            <p>© 2026 Roberto Ansuini · Always evolving, always learning</p>
         </footer>
     </div>
+
+    <script>
+        // Plausible custom event tracking
+        window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }
+
+        // Track social link clicks
+        document.querySelectorAll('.social-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const platform = this.title; // "Twitter/X", "LinkedIn", "GitHub"
+                plausible('Social Click', {props: {platform: platform}});
+            });
+        });
+
+        // Track project link clicks
+        document.querySelectorAll('.project-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const project = this.closest('.project-card').querySelector('h3').textContent;
+                plausible('Project Click', {props: {project: project}});
+            });
+        });
+
+        // Track newsletter CTA
+        document.querySelector('.cta-box .btn').addEventListener('click', function(e) {
+            plausible('Newsletter CTA', {props: {location: 'main-cta-box'}});
+        });
+    </script>
 </body>
 </html>
