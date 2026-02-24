@@ -29,9 +29,17 @@ python3 -m http.server 8000
 # Visit http://localhost:8000
 ```
 
+**Quality checks:**
+```bash
+node scripts/check-external-links.js
+```
+
+This validates that every `target="_blank"` link includes `rel="noopener noreferrer"` to prevent reverse-tabnabbing.
+
 **Deploy:**
 - Push/merge to `master` → auto-deploys to GitHub Pages
 - Deployment takes ~1-2 minutes
+- GitHub Actions runs `site-checks` on pushes/PRs
 
 ## 📊 Performance
 
@@ -45,4 +53,4 @@ Personal site - all rights reserved.
 
 ---
 
-**Last updated:** February 2026 (v8 - Modern redesign)
+**Last updated:** February 2026 (v9 - Link security hardening + CI checks)
