@@ -6,13 +6,79 @@ const path = require('node:path');
 const ANCHOR_TAG_REGEX = /<a\b[^>]*>/gi;
 const ATTRIBUTE_REGEX = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+)))?/g;
 const REQUIRED_REL_TOKENS = ['noopener', 'noreferrer'];
+const IGNORED_DIRS = new Set(['.git', 'node_modules']);
 
-function resolveHtmlPath(rawPath) {
+function resolveTargetPath(rawPath) {
   if (!rawPath) {
-    return path.join(process.cwd(), 'index.html');
+    return process.cwd();
   }
 
   return path.resolve(process.cwd(), rawPath);
+}
+
+function toRelativePath(filePath) {
+  const relativePath = path.relative(process.cwd(), filePath);
+
+  if (!relativePath) {
+    return '.';
+  }
+
+  if (relativePath.startsWith('..')) {
+    return filePath;
+  }
+
+  return relativePath;
+}
+
+function collectHtmlFiles(targetPath) {
+  let stat;
+  try {
+    stat = fs.statSync(targetPath);
+  } catch {
+    throw new Error(`Path does not exist: ${targetPath}`);
+  }
+
+  if (stat.isFile()) {
+    return [targetPath];
+  }
+
+  if (!stat.isDirectory()) {
+    throw new Error(`Path is not a file or directory: ${targetPath}`);
+  }
+
+  const files = [];
+
+  function walk(dirPath) {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+
+    for (const entry of entries) {
+      if (entry.name.startsWith('.') && entry.name !== '.well-known') {
+        continue;
+      }
+
+      if (entry.isDirectory()) {
+        if (IGNORED_DIRS.has(entry.name)) {
+          continue;
+        }
+
+        walk(path.join(dirPath, entry.name));
+        continue;
+      }
+
+      if (entry.isFile() && entry.name.toLowerCase().endsWith('.html')) {
+        files.push(path.join(dirPath, entry.name));
+      }
+    }
+  }
+
+  walk(targetPath);
+  files.sort((a, b) => a.localeCompare(b));
+
+  if (files.length === 0) {
+    throw new Error(`No HTML files found under: ${targetPath}`);
+  }
+
+  return files;
 }
 
 function readHtmlFile(filePath) {
@@ -133,35 +199,58 @@ function validateHtml(html) {
     .filter(Boolean);
 }
 
-function reportFailures(failures, filePath) {
-  console.error(`External link safety check failed for ${filePath}.`);
+function validateFile(filePath) {
+  const html = readHtmlFile(filePath);
+  const relativeFilePath = toRelativePath(filePath);
+
+  return validateHtml(html).map(failure => ({
+    ...failure,
+    filePath: relativeFilePath,
+  }));
+}
+
+function reportFailures(failures) {
+  console.error('External link safety check failed.');
 
   for (const failure of failures) {
     console.error(
-      `- ${failure.reason} @ line ${failure.line}, col ${failure.column}: ${failure.tag}`,
+      `- [${failure.filePath}] ${failure.reason} @ line ${failure.line}, col ${failure.column}: ${failure.tag}`,
     );
   }
 }
 
 function main() {
-  const filePath = resolveHtmlPath(process.argv[2]);
+  const targetPath = resolveTargetPath(process.argv[2]);
 
-  let html;
+  let htmlFiles;
   try {
-    html = readHtmlFile(filePath);
+    htmlFiles = collectHtmlFiles(targetPath);
   } catch (error) {
-    console.error(`Failed to read HTML file: ${filePath}`);
     console.error(error.message);
     process.exit(1);
   }
 
-  const failures = validateHtml(html);
+  const failures = [];
+
+  for (const filePath of htmlFiles) {
+    try {
+      failures.push(...validateFile(filePath));
+    } catch (error) {
+      console.error(`Failed to read HTML file: ${filePath}`);
+      console.error(error.message);
+      process.exit(1);
+    }
+  }
+
   if (failures.length > 0) {
-    reportFailures(failures, filePath);
+    reportFailures(failures);
     process.exit(1);
   }
 
-  console.log(`External link safety check passed for ${filePath}.`);
+  const scope = process.argv[2] ? toRelativePath(targetPath) : '.';
+  console.log(
+    `External link safety check passed for ${htmlFiles.length} HTML file(s) under ${scope}.`,
+  );
 }
 
 main();
