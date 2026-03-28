@@ -34,7 +34,7 @@ python3 -m http.server 8000
 node scripts/check-external-links.js
 ```
 
-This validates that every `target="_blank"` link includes `rel="noopener noreferrer"` to prevent reverse-tabnabbing.
+This validates that every `target="_blank"` link across all repo HTML files includes `rel="noopener noreferrer"` to prevent reverse-tabnabbing.
 
 **Deploy:**
 - Push/merge to `master` → auto-deploys to GitHub Pages
