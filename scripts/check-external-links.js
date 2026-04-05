@@ -14,7 +14,7 @@ function findHtmlFiles(dir) {
   const files = [];
 
   for (const entry of entries) {
-    if (entry.name.startsWith('.') || SKIP_DIRS.has(entry.name)) {
+    if (SKIP_DIRS.has(entry.name)) {
       continue;
     }
 

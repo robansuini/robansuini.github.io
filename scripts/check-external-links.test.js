@@ -55,6 +55,46 @@ test('run scans nested html files and reports file count on success', () => {
   }
 });
 
+test('run scans hidden web dirs but skips internal directories', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-hidden-'));
+
+  try {
+    fs.mkdirSync(path.join(tempDir, '.well-known'));
+    fs.mkdirSync(path.join(tempDir, '.git'));
+    fs.mkdirSync(path.join(tempDir, 'node_modules'));
+
+    fs.writeFileSync(
+      path.join(tempDir, 'index.html'),
+      '<a href="https://a.com" target="_blank" rel="noopener noreferrer">A</a>',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(tempDir, '.well-known', 'security.html'),
+      '<a href="https://b.com" target="_blank" rel="noopener noreferrer">B</a>',
+      'utf8',
+    );
+
+    fs.writeFileSync(
+      path.join(tempDir, '.git', 'ignored.html'),
+      '<a href="https://bad.com" target="_blank">bad</a>',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(tempDir, 'node_modules', 'ignored.html'),
+      '<a href="https://bad.com" target="_blank">bad</a>',
+      'utf8',
+    );
+
+    const result = run(tempDir);
+    assert.equal(result.ok, true);
+    assert.equal(result.htmlFileCount, 2);
+    assert.equal(result.failures.length, 0);
+    assert.match(result.message, /2 HTML file\(s\) scanned/);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test('run returns failure when no html files are present', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-empty-'));
 
