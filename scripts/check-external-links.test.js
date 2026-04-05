@@ -1,0 +1,70 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
+const { checkHtmlFile, run } = require('./check-external-links.js');
+
+test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () => {
+  const html = '<a href="https://example.com" target="_blank" rel="noopener noreferrer">ok</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile fails when rel attribute is missing', () => {
+  const html = '<a href="https://example.com" target="_blank">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+  assert.equal(failures[0].filePath, 'index.html');
+});
+
+test('checkHtmlFile fails when rel misses required tokens', () => {
+  const html = '<a href="https://example.com" target="_blank" rel="noopener">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'rel must include both noopener and noreferrer');
+});
+
+test('run scans nested html files and reports file count on success', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-pass-'));
+
+  try {
+    fs.mkdirSync(path.join(tempDir, 'nested'));
+    fs.writeFileSync(
+      path.join(tempDir, 'index.html'),
+      '<a href="https://a.com" target="_blank" rel="noopener noreferrer">A</a>',
+      'utf8',
+    );
+    fs.writeFileSync(
+      path.join(tempDir, 'nested', 'page.html'),
+      '<a href="https://b.com" target="_blank" rel="noreferrer noopener">B</a>',
+      'utf8',
+    );
+
+    const result = run(tempDir);
+    assert.equal(result.ok, true);
+    assert.equal(result.htmlFileCount, 2);
+    assert.equal(result.failures.length, 0);
+    assert.match(result.message, /2 HTML file\(s\) scanned/);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
+test('run returns failure when no html files are present', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-empty-'));
+
+  try {
+    const result = run(tempDir);
+    assert.equal(result.ok, false);
+    assert.equal(result.htmlFileCount, 0);
+    assert.equal(result.failures.length, 0);
+    assert.equal(result.message, 'No HTML files found to validate.');
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});

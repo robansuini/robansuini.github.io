@@ -3,7 +3,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const rootDir = process.cwd();
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
 
 const anchorTagRegex = /<a\b[^>]*>/gi;
@@ -75,25 +74,61 @@ function checkHtmlFile(html, filePath) {
   return failures;
 }
 
-const htmlFiles = findHtmlFiles(rootDir).sort();
-if (htmlFiles.length === 0) {
-  console.error('No HTML files found to validate.');
-  process.exit(1);
-}
-
-const failures = [];
-for (const filePath of htmlFiles) {
-  const html = fs.readFileSync(filePath, 'utf8');
-  anchorTagRegex.lastIndex = 0;
-  failures.push(...checkHtmlFile(html, path.relative(rootDir, filePath)));
-}
-
-if (failures.length > 0) {
-  console.error('External link safety check failed.');
-  for (const failure of failures) {
-    console.error(`- ${failure.reason} in ${failure.filePath} @ index ${failure.index}: ${failure.tag}`);
+function run(rootDir = process.cwd()) {
+  const htmlFiles = findHtmlFiles(rootDir).sort();
+  if (htmlFiles.length === 0) {
+    return {
+      ok: false,
+      htmlFileCount: 0,
+      failures: [],
+      message: 'No HTML files found to validate.',
+    };
   }
-  process.exit(1);
+
+  const failures = [];
+  for (const filePath of htmlFiles) {
+    const html = fs.readFileSync(filePath, 'utf8');
+    anchorTagRegex.lastIndex = 0;
+    failures.push(...checkHtmlFile(html, path.relative(rootDir, filePath)));
+  }
+
+  if (failures.length > 0) {
+    return {
+      ok: false,
+      htmlFileCount: htmlFiles.length,
+      failures,
+      message: 'External link safety check failed.',
+    };
+  }
+
+  return {
+    ok: true,
+    htmlFileCount: htmlFiles.length,
+    failures: [],
+    message: `External link safety check passed (${htmlFiles.length} HTML file(s) scanned).`,
+  };
 }
 
-console.log(`External link safety check passed (${htmlFiles.length} HTML file(s) scanned).`);
+function main() {
+  const result = run();
+
+  if (!result.ok) {
+    console.error(result.message);
+    for (const failure of result.failures) {
+      console.error(`- ${failure.reason} in ${failure.filePath} @ index ${failure.index}: ${failure.tag}`);
+    }
+    process.exit(1);
+  }
+
+  console.log(result.message);
+}
+
+module.exports = {
+  checkHtmlFile,
+  findHtmlFiles,
+  run,
+};
+
+if (require.main === module) {
+  main();
+}
