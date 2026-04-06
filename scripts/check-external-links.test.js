@@ -4,7 +4,14 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { checkHtmlFile, run } = require('./check-external-links.js');
+const { checkHtmlFile, getLineColumn, run } = require('./check-external-links.js');
+
+test('getLineColumn returns 1-based line/column', () => {
+  const text = 'first\nsecond\nthird';
+  assert.deepEqual(getLineColumn(text, 0), { line: 1, column: 1 });
+  assert.deepEqual(getLineColumn(text, 8), { line: 2, column: 3 });
+  assert.deepEqual(getLineColumn(text, text.length), { line: 3, column: 6 });
+});
 
 test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () => {
   const html = '<a href="https://example.com" target="_blank" rel="noopener noreferrer">ok</a>';
@@ -13,12 +20,14 @@ test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () 
 });
 
 test('checkHtmlFile fails when rel attribute is missing', () => {
-  const html = '<a href="https://example.com" target="_blank">bad</a>';
+  const html = '<main>\n  <a href="https://example.com" target="_blank">bad</a>\n</main>';
   const failures = checkHtmlFile(html, 'index.html');
 
   assert.equal(failures.length, 1);
   assert.equal(failures[0].reason, 'missing rel attribute');
   assert.equal(failures[0].filePath, 'index.html');
+  assert.equal(failures[0].line, 2);
+  assert.equal(failures[0].column, 3);
 });
 
 test('checkHtmlFile fails when rel misses required tokens', () => {

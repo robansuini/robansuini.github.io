@@ -9,6 +9,15 @@ const anchorTagRegex = /<a\b[^>]*>/gi;
 const targetBlankRegex = /\btarget\s*=\s*(["'])_blank\1/i;
 const relRegex = /\brel\s*=\s*(["'])(.*?)\1/i;
 
+function getLineColumn(text, index) {
+  const safeIndex = Math.max(0, Math.min(index, text.length));
+  const upToIndex = text.slice(0, safeIndex);
+  const line = upToIndex.split('\n').length;
+  const lastNewline = upToIndex.lastIndexOf('\n');
+  const column = safeIndex - lastNewline;
+  return { line, column };
+}
+
 function findHtmlFiles(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files = [];
@@ -43,11 +52,15 @@ function checkHtmlFile(html, filePath) {
       continue;
     }
 
+    const location = getLineColumn(html, match.index);
+
     const relMatch = tag.match(relRegex);
     if (!relMatch) {
       failures.push({
         filePath,
         index: match.index,
+        line: location.line,
+        column: location.column,
         reason: 'missing rel attribute',
         tag,
       });
@@ -65,6 +78,8 @@ function checkHtmlFile(html, filePath) {
       failures.push({
         filePath,
         index: match.index,
+        line: location.line,
+        column: location.column,
         reason: 'rel must include both noopener and noreferrer',
         tag,
       });
@@ -115,7 +130,11 @@ function main() {
   if (!result.ok) {
     console.error(result.message);
     for (const failure of result.failures) {
-      console.error(`- ${failure.reason} in ${failure.filePath} @ index ${failure.index}: ${failure.tag}`);
+      const line = failure.line ?? '?';
+      const column = failure.column ?? '?';
+      console.error(
+        `- ${failure.reason} in ${failure.filePath}:${line}:${column} (index ${failure.index}): ${failure.tag}`,
+      );
     }
     process.exit(1);
   }
@@ -126,6 +145,7 @@ function main() {
 module.exports = {
   checkHtmlFile,
   findHtmlFiles,
+  getLineColumn,
   run,
 };
 
