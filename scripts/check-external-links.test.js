@@ -30,12 +30,27 @@ test('checkHtmlFile fails when rel attribute is missing', () => {
   assert.equal(failures[0].column, 3);
 });
 
+test('checkHtmlFile fails for unquoted target=_blank when rel is missing', () => {
+  const html = '<a href="https://example.com" target=_blank>bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+});
+
 test('checkHtmlFile fails when rel misses required tokens', () => {
   const html = '<a href="https://example.com" target="_blank" rel="noopener">bad</a>';
   const failures = checkHtmlFile(html, 'index.html');
 
   assert.equal(failures.length, 1);
   assert.equal(failures[0].reason, 'rel must include both noopener and noreferrer');
+});
+
+test('checkHtmlFile passes for unquoted target=_blank with valid rel tokens', () => {
+  const html = '<a href="https://example.com" target=_blank rel="noopener noreferrer">ok</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
 });
 
 test('run scans nested html files and reports file count on success', () => {

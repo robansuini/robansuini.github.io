@@ -6,8 +6,19 @@ const path = require('node:path');
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
 
 const anchorTagRegex = /<a\b[^>]*>/gi;
-const targetBlankRegex = /\btarget\s*=\s*(["'])_blank\1/i;
-const relRegex = /\brel\s*=\s*(["'])(.*?)\1/i;
+
+function getAttributeValue(tag, attributeName) {
+  const attributeRegex = new RegExp(
+    `\\b${attributeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`,
+    'i',
+  );
+  const match = tag.match(attributeRegex);
+  if (!match) {
+    return null;
+  }
+
+  return match[1] ?? match[2] ?? match[3] ?? '';
+}
 
 function getLineColumn(text, index) {
   const safeIndex = Math.max(0, Math.min(index, text.length));
@@ -48,14 +59,15 @@ function checkHtmlFile(html, filePath) {
   while ((match = anchorTagRegex.exec(html)) !== null) {
     const tag = match[0];
 
-    if (!targetBlankRegex.test(tag)) {
+    const target = getAttributeValue(tag, 'target');
+    if (!target || target.toLowerCase() !== '_blank') {
       continue;
     }
 
     const location = getLineColumn(html, match.index);
 
-    const relMatch = tag.match(relRegex);
-    if (!relMatch) {
+    const rel = getAttributeValue(tag, 'rel');
+    if (rel === null) {
       failures.push({
         filePath,
         index: match.index,
@@ -68,7 +80,7 @@ function checkHtmlFile(html, filePath) {
     }
 
     const relTokens = new Set(
-      relMatch[2]
+      rel
         .split(/\s+/)
         .map(token => token.trim().toLowerCase())
         .filter(Boolean),
