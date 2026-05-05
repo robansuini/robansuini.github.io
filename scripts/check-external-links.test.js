@@ -53,6 +53,22 @@ test('checkHtmlFile passes for unquoted target=_blank with valid rel tokens', ()
   assert.equal(failures.length, 0);
 });
 
+test('checkHtmlFile ignores unsafe anchors inside HTML comments', () => {
+  const html = '<!-- <a href="https://example.com" target="_blank">commented out</a> -->';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile still reports unsafe anchors after HTML comments', () => {
+  const html = '<!-- <a href="https://safe-to-ignore.com" target="_blank">ignore</a> -->\n<a href="https://example.com" target="_blank">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+  assert.equal(failures[0].line, 2);
+});
+
 test('run scans nested html files and reports file count on success', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-pass-'));
 
