@@ -30,6 +30,22 @@ test('checkHtmlFile fails when rel attribute is missing', () => {
   assert.equal(failures[0].column, 3);
 });
 
+test('checkHtmlFile ignores prefixed target attributes', () => {
+  const html = '<a href="https://example.com" data-target="_blank">ok</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile ignores prefixed rel attributes', () => {
+  const html =
+    '<a href="https://example.com" target="_blank" data-rel="noopener noreferrer">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+});
+
 test('checkHtmlFile fails for unquoted target=_blank when rel is missing', () => {
   const html = '<a href="https://example.com" target=_blank>bad</a>';
   const failures = checkHtmlFile(html, 'index.html');

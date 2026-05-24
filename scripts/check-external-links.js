@@ -9,7 +9,7 @@ const anchorTagRegex = /<a\b[^>]*>/gi;
 
 function getAttributeValue(tag, attributeName) {
   const attributeRegex = new RegExp(
-    `\\b${attributeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`,
+    `(?:^|\\s)${attributeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`,
     'i',
   );
   const match = tag.match(attributeRegex);
