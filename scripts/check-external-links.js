@@ -5,8 +5,6 @@ const path = require('node:path');
 
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
 
-const anchorTagRegex = /<a\b[^>]*>/gi;
-
 function getAttributeValue(tag, attributeName) {
   const attributeRegex = new RegExp(
     `\\b${attributeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`,
@@ -18,6 +16,13 @@ function getAttributeValue(tag, attributeName) {
   }
 
   return match[1] ?? match[2] ?? match[3] ?? '';
+}
+
+function findAnchorTags(html) {
+  return Array.from(html.matchAll(/<a\b[^>]*>/gi), match => ({
+    tag: match[0],
+    index: match.index ?? 0,
+  }));
 }
 
 function getLineColumn(text, index) {
@@ -54,23 +59,20 @@ function findHtmlFiles(dir) {
 
 function checkHtmlFile(html, filePath) {
   const failures = [];
-  let match;
 
-  while ((match = anchorTagRegex.exec(html)) !== null) {
-    const tag = match[0];
-
+  for (const { tag, index } of findAnchorTags(html)) {
     const target = getAttributeValue(tag, 'target');
     if (!target || target.toLowerCase() !== '_blank') {
       continue;
     }
 
-    const location = getLineColumn(html, match.index);
+    const location = getLineColumn(html, index);
 
     const rel = getAttributeValue(tag, 'rel');
     if (rel === null) {
       failures.push({
         filePath,
-        index: match.index,
+        index,
         line: location.line,
         column: location.column,
         reason: 'missing rel attribute',
@@ -89,7 +91,7 @@ function checkHtmlFile(html, filePath) {
     if (!relTokens.has('noopener') || !relTokens.has('noreferrer')) {
       failures.push({
         filePath,
-        index: match.index,
+        index,
         line: location.line,
         column: location.column,
         reason: 'rel must include both noopener and noreferrer',
@@ -115,7 +117,6 @@ function run(rootDir = process.cwd()) {
   const failures = [];
   for (const filePath of htmlFiles) {
     const html = fs.readFileSync(filePath, 'utf8');
-    anchorTagRegex.lastIndex = 0;
     failures.push(...checkHtmlFile(html, path.relative(rootDir, filePath)));
   }
 
@@ -156,6 +157,7 @@ function main() {
 
 module.exports = {
   checkHtmlFile,
+  findAnchorTags,
   findHtmlFiles,
   getLineColumn,
   run,
