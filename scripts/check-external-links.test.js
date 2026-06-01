@@ -4,13 +4,27 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { checkHtmlFile, getLineColumn, run } = require('./check-external-links.js');
+const {
+  checkHtmlFile,
+  findAnchorTags,
+  getLineColumn,
+  run,
+} = require('./check-external-links.js');
 
 test('getLineColumn returns 1-based line/column', () => {
   const text = 'first\nsecond\nthird';
   assert.deepEqual(getLineColumn(text, 0), { line: 1, column: 1 });
   assert.deepEqual(getLineColumn(text, 8), { line: 2, column: 3 });
   assert.deepEqual(getLineColumn(text, text.length), { line: 3, column: 6 });
+});
+
+test('findAnchorTags returns tag text and source indexes', () => {
+  const html = '<main><a href="/">home</a><p>text</p><a href="/about">about</a></main>';
+
+  assert.deepEqual(findAnchorTags(html), [
+    { tag: '<a href="/">', index: 6 },
+    { tag: '<a href="/about">', index: 37 },
+  ]);
 });
 
 test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () => {
