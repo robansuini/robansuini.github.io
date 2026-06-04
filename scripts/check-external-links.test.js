@@ -7,6 +7,7 @@ const path = require('node:path');
 const {
   checkHtmlFile,
   findAnchorTags,
+  getBlankTargetRelFailureReason,
   getLineColumn,
   run,
 } = require('./check-external-links.js');
@@ -25,6 +26,30 @@ test('findAnchorTags returns tag text and source indexes', () => {
     { tag: '<a href="/">', index: 6 },
     { tag: '<a href="/about">', index: 37 },
   ]);
+});
+
+test('getBlankTargetRelFailureReason ignores non-blank targets', () => {
+  assert.equal(getBlankTargetRelFailureReason('<a href="/local">local</a>'), null);
+  assert.equal(getBlankTargetRelFailureReason('<a href="/local" target="_self">local</a>'), null);
+});
+
+test('getBlankTargetRelFailureReason validates required rel tokens', () => {
+  assert.equal(
+    getBlankTargetRelFailureReason('<a href="https://example.com" target="_blank">bad</a>'),
+    'missing rel attribute',
+  );
+  assert.equal(
+    getBlankTargetRelFailureReason(
+      '<a href="https://example.com" target="_blank" rel="noopener external">bad</a>',
+    ),
+    'rel must include both noopener and noreferrer',
+  );
+  assert.equal(
+    getBlankTargetRelFailureReason(
+      '<a href="https://example.com" target="_BLANK" rel="NOOPENER noreferrer external">ok</a>',
+    ),
+    null,
+  );
 });
 
 test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () => {

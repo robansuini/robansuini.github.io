@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
+const REQUIRED_BLANK_TARGET_REL_TOKENS = ['noopener', 'noreferrer'];
 
 function getAttributeValue(tag, attributeName) {
   const attributeRegex = new RegExp(
@@ -23,6 +24,31 @@ function findAnchorTags(html) {
     tag: match[0],
     index: match.index ?? 0,
   }));
+}
+
+function getBlankTargetRelFailureReason(tag) {
+  const target = getAttributeValue(tag, 'target');
+  if (!target || target.toLowerCase() !== '_blank') {
+    return null;
+  }
+
+  const rel = getAttributeValue(tag, 'rel');
+  if (rel === null) {
+    return 'missing rel attribute';
+  }
+
+  const relTokens = new Set(
+    rel
+      .split(/\s+/)
+      .map(token => token.trim().toLowerCase())
+      .filter(Boolean),
+  );
+
+  if (REQUIRED_BLANK_TARGET_REL_TOKENS.every(token => relTokens.has(token))) {
+    return null;
+  }
+
+  return 'rel must include both noopener and noreferrer';
 }
 
 function getLineColumn(text, index) {
@@ -61,43 +87,21 @@ function checkHtmlFile(html, filePath) {
   const failures = [];
 
   for (const { tag, index } of findAnchorTags(html)) {
-    const target = getAttributeValue(tag, 'target');
-    if (!target || target.toLowerCase() !== '_blank') {
+    const reason = getBlankTargetRelFailureReason(tag);
+
+    if (reason === null) {
       continue;
     }
 
     const location = getLineColumn(html, index);
-
-    const rel = getAttributeValue(tag, 'rel');
-    if (rel === null) {
-      failures.push({
-        filePath,
-        index,
-        line: location.line,
-        column: location.column,
-        reason: 'missing rel attribute',
-        tag,
-      });
-      continue;
-    }
-
-    const relTokens = new Set(
-      rel
-        .split(/\s+/)
-        .map(token => token.trim().toLowerCase())
-        .filter(Boolean),
-    );
-
-    if (!relTokens.has('noopener') || !relTokens.has('noreferrer')) {
-      failures.push({
-        filePath,
-        index,
-        line: location.line,
-        column: location.column,
-        reason: 'rel must include both noopener and noreferrer',
-        tag,
-      });
-    }
+    failures.push({
+      filePath,
+      index,
+      line: location.line,
+      column: location.column,
+      reason,
+      tag,
+    });
   }
 
   return failures;
@@ -159,6 +163,7 @@ module.exports = {
   checkHtmlFile,
   findAnchorTags,
   findHtmlFiles,
+  getBlankTargetRelFailureReason,
   getLineColumn,
   run,
 };
