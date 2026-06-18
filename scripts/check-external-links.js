@@ -20,10 +20,51 @@ function getAttributeValue(tag, attributeName) {
 }
 
 function findAnchorTags(html) {
-  return Array.from(html.matchAll(/<a\b[^>]*>/gi), match => ({
-    tag: match[0],
-    index: match.index ?? 0,
-  }));
+  const tags = [];
+  const anchorStartRegex = /<a\b/gi;
+  let match;
+
+  while ((match = anchorStartRegex.exec(html)) !== null) {
+    const index = match.index ?? 0;
+    const endIndex = findTagEnd(html, anchorStartRegex.lastIndex);
+    if (endIndex === -1) {
+      continue;
+    }
+
+    tags.push({
+      tag: html.slice(index, endIndex + 1),
+      index,
+    });
+    anchorStartRegex.lastIndex = endIndex + 1;
+  }
+
+  return tags;
+}
+
+function findTagEnd(html, startIndex) {
+  let quote = null;
+
+  for (let index = startIndex; index < html.length; index += 1) {
+    const char = html[index];
+
+    if (quote !== null) {
+      if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (char === '"' || char === "'") {
+      quote = char;
+      continue;
+    }
+
+    if (char === '>') {
+      return index;
+    }
+  }
+
+  return -1;
 }
 
 function getBlankTargetRelFailureReason(tag) {
