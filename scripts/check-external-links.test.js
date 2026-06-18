@@ -28,6 +28,14 @@ test('findAnchorTags returns tag text and source indexes', () => {
   ]);
 });
 
+test('findAnchorTags preserves quoted greater-than characters inside attributes', () => {
+  const html = '<a href="https://example.com?q=1>0" aria-label="1 > 0">math</a>';
+
+  assert.deepEqual(findAnchorTags(html), [
+    { tag: '<a href="https://example.com?q=1>0" aria-label="1 > 0">', index: 0 },
+  ]);
+});
+
 test('getBlankTargetRelFailureReason ignores non-blank targets', () => {
   assert.equal(getBlankTargetRelFailureReason('<a href="/local">local</a>'), null);
   assert.equal(getBlankTargetRelFailureReason('<a href="/local" target="_self">local</a>'), null);
