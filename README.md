@@ -32,9 +32,10 @@ python3 -m http.server 8000
 **Quality checks:**
 ```bash
 node scripts/check-external-links.js
+node --test scripts/check-external-links.test.js
 ```
 
-This validates that every `target="_blank"` link across all repo HTML files includes `rel="noopener noreferrer"` to prevent reverse-tabnabbing.
+These match the `site-checks` CI workflow: validating that every `target="_blank"` link across all repo HTML files includes `rel="noopener noreferrer"` to prevent reverse-tabnabbing, then running the checker regression tests.
 
 **Deploy:**
 - Push/merge to `master` → auto-deploys to GitHub Pages
