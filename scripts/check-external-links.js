@@ -29,12 +29,20 @@ function getLineColumn(text, index) {
   return { line, column };
 }
 
+function shouldSkipDirectory(entry) {
+  return entry.isDirectory() && SKIP_DIRS.has(entry.name);
+}
+
+function isHtmlFile(entry) {
+  return entry.isFile() && entry.name.endsWith('.html');
+}
+
 function findHtmlFiles(dir) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   const files = [];
 
   for (const entry of entries) {
-    if (SKIP_DIRS.has(entry.name)) {
+    if (shouldSkipDirectory(entry)) {
       continue;
     }
 
@@ -44,7 +52,7 @@ function findHtmlFiles(dir) {
       continue;
     }
 
-    if (entry.isFile() && entry.name.endsWith('.html')) {
+    if (isHtmlFile(entry)) {
       files.push(fullPath);
     }
   }
@@ -158,7 +166,9 @@ module.exports = {
   checkHtmlFile,
   findHtmlFiles,
   getLineColumn,
+  isHtmlFile,
   run,
+  shouldSkipDirectory,
 };
 
 if (require.main === module) {
