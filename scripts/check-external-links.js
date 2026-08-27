@@ -30,6 +30,29 @@ function getLineColumn(text, index) {
   return { line, column };
 }
 
+function findHtmlCommentRanges(html) {
+  const ranges = [];
+  let searchIndex = 0;
+
+  while (searchIndex < html.length) {
+    const start = html.indexOf('<!--', searchIndex);
+    if (start === -1) {
+      break;
+    }
+
+    const closeIndex = html.indexOf('-->', start + 4);
+    const end = closeIndex === -1 ? html.length : closeIndex + 3;
+    ranges.push({ start, end });
+    searchIndex = end;
+  }
+
+  return ranges;
+}
+
+function isIndexInRanges(index, ranges) {
+  return ranges.some(range => index >= range.start && index < range.end);
+}
+
 function getRelTokens(rel) {
   return new Set(
     rel
@@ -76,9 +99,14 @@ function findHtmlFiles(dir) {
 
 function checkHtmlFile(html, filePath) {
   const failures = [];
+  const commentRanges = findHtmlCommentRanges(html);
   let match;
 
   while ((match = anchorTagRegex.exec(html)) !== null) {
+    if (isIndexInRanges(match.index, commentRanges)) {
+      continue;
+    }
+
     const tag = match[0];
 
     const target = getAttributeValue(tag, 'target');
