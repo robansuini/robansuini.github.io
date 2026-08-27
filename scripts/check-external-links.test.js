@@ -9,8 +9,15 @@ const {
   findAnchorTags,
   getBlankTargetRelFailureReason,
   getLineColumn,
+  getRelTokens,
+  hasRequiredRelTokens,
   run,
 } = require('./check-external-links.js');
+
+function getAttributeValue(tag, attributeName) {
+  const attributeRegex = new RegExp(`\\b${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
+  return tag.match(attributeRegex)?.[1] ?? null;
+}
 
 test('getLineColumn returns 1-based line/column', () => {
   const text = 'first\nsecond\nthird';
@@ -60,6 +67,20 @@ test('getBlankTargetRelFailureReason validates required rel tokens', () => {
   );
 });
 
+test('getRelTokens normalizes whitespace, duplicates, and case', () => {
+  assert.deepEqual([...getRelTokens('  NoOpener  noreferrer noopener  ')], [
+    'noopener',
+    'noreferrer',
+  ]);
+});
+
+test('hasRequiredRelTokens requires noopener and noreferrer', () => {
+  assert.equal(hasRequiredRelTokens('noopener noreferrer'), true);
+  assert.equal(hasRequiredRelTokens('external noreferrer noopener'), true);
+  assert.equal(hasRequiredRelTokens('noopener'), false);
+  assert.equal(hasRequiredRelTokens('noreferrer'), false);
+});
+
 test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () => {
   const html = '<a href="https://example.com" target="_blank" rel="noopener noreferrer">ok</a>';
   const failures = checkHtmlFile(html, 'index.html');
@@ -75,6 +96,22 @@ test('checkHtmlFile fails when rel attribute is missing', () => {
   assert.equal(failures[0].filePath, 'index.html');
   assert.equal(failures[0].line, 2);
   assert.equal(failures[0].column, 3);
+});
+
+test('checkHtmlFile ignores prefixed target attributes', () => {
+  const html = '<a href="https://example.com" data-target="_blank">ok</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile ignores prefixed rel attributes', () => {
+  const html =
+    '<a href="https://example.com" target="_blank" data-rel="noopener noreferrer">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
 });
 
 test('checkHtmlFile fails for unquoted target=_blank when rel is missing', () => {
@@ -98,6 +135,39 @@ test('checkHtmlFile passes for unquoted target=_blank with valid rel tokens', ()
   const failures = checkHtmlFile(html, 'index.html');
 
   assert.equal(failures.length, 0);
+});
+
+test('site social links have explicit accessible labels', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const socialLinks = html.match(/<div class="social-links">([\s\S]*?)<\/div>/);
+
+  assert.ok(socialLinks, 'expected social links block to exist');
+
+  const socialAnchorTags = [...socialLinks[1].matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
+  assert.deepEqual(
+    socialAnchorTags.map(tag => getAttributeValue(tag, 'aria-label')),
+    [
+      'Follow Roberto Ansuini on X',
+      'Connect with Roberto Ansuini on LinkedIn',
+      'View Roberto Ansuini on GitHub',
+    ],
+  );
+});
+
+test('checkHtmlFile ignores unsafe anchors inside HTML comments', () => {
+  const html = '<!-- <a href="https://example.com" target="_blank">commented out</a> -->';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile still reports unsafe anchors after HTML comments', () => {
+  const html = '<!-- <a href="https://safe-to-ignore.com" target="_blank">ignore</a> -->\n<a href="https://example.com" target="_blank">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+  assert.equal(failures[0].line, 2);
 });
 
 test('run scans nested html files and reports file count on success', () => {
