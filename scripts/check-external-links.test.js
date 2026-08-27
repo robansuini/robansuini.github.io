@@ -12,6 +12,11 @@ const {
   run,
 } = require('./check-external-links.js');
 
+function getAttributeValue(tag, attributeName) {
+  const attributeRegex = new RegExp(`\\b${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
+  return tag.match(attributeRegex)?.[1] ?? null;
+}
+
 test('getLineColumn returns 1-based line/column', () => {
   const text = 'first\nsecond\nthird';
   assert.deepEqual(getLineColumn(text, 0), { line: 1, column: 1 });
@@ -71,6 +76,23 @@ test('checkHtmlFile passes for unquoted target=_blank with valid rel tokens', ()
   const failures = checkHtmlFile(html, 'index.html');
 
   assert.equal(failures.length, 0);
+});
+
+test('site social links have explicit accessible labels', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const socialLinks = html.match(/<div class="social-links">([\s\S]*?)<\/div>/);
+
+  assert.ok(socialLinks, 'expected social links block to exist');
+
+  const socialAnchorTags = [...socialLinks[1].matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
+  assert.deepEqual(
+    socialAnchorTags.map(tag => getAttributeValue(tag, 'aria-label')),
+    [
+      'Follow Roberto Ansuini on X',
+      'Connect with Roberto Ansuini on LinkedIn',
+      'View Roberto Ansuini on GitHub',
+    ],
+  );
 });
 
 test('checkHtmlFile ignores unsafe anchors inside HTML comments', () => {
