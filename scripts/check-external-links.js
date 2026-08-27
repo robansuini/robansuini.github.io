@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
+const REQUIRED_REL_TOKENS = new Set(['noopener', 'noreferrer']);
 
 const anchorTagRegex = /<a\b[^>]*>/gi;
 
@@ -50,6 +51,27 @@ function findHtmlCommentRanges(html) {
 
 function isIndexInRanges(index, ranges) {
   return ranges.some(range => index >= range.start && index < range.end);
+}
+
+function getRelTokens(rel) {
+  return new Set(
+    rel
+      .split(/\s+/)
+      .map(token => token.trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
+function hasRequiredRelTokens(rel) {
+  const relTokens = getRelTokens(rel);
+
+  for (const requiredToken of REQUIRED_REL_TOKENS) {
+    if (!relTokens.has(requiredToken)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function findHtmlFiles(dir) {
@@ -107,14 +129,7 @@ function checkHtmlFile(html, filePath) {
       continue;
     }
 
-    const relTokens = new Set(
-      rel
-        .split(/\s+/)
-        .map(token => token.trim().toLowerCase())
-        .filter(Boolean),
-    );
-
-    if (!relTokens.has('noopener') || !relTokens.has('noreferrer')) {
+    if (!hasRequiredRelTokens(rel)) {
       failures.push({
         filePath,
         index: match.index,
@@ -186,6 +201,8 @@ module.exports = {
   checkHtmlFile,
   findHtmlFiles,
   getLineColumn,
+  getRelTokens,
+  hasRequiredRelTokens,
   run,
 };
 
