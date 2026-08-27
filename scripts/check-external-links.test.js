@@ -136,6 +136,14 @@ test('checkHtmlFile fails for unquoted target=_blank when rel is missing', () =>
   assert.equal(failures[0].reason, 'missing rel attribute');
 });
 
+test('checkHtmlFile fails for single-quoted target=_blank when rel is missing', () => {
+  const html = "<a href='https://example.com' target='_blank'>bad</a>";
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+});
+
 test('checkHtmlFile fails when rel misses required tokens', () => {
   const html = '<a href="https://example.com" target="_blank" rel="noopener">bad</a>';
   const failures = checkHtmlFile(html, 'index.html');
@@ -146,6 +154,13 @@ test('checkHtmlFile fails when rel misses required tokens', () => {
 
 test('checkHtmlFile passes for unquoted target=_blank with valid rel tokens', () => {
   const html = '<a href="https://example.com" target=_blank rel="noopener noreferrer">ok</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile passes for single-quoted target=_blank with valid rel tokens', () => {
+  const html = "<a href='https://example.com' target='_blank' rel='noopener noreferrer'>ok</a>";
   const failures = checkHtmlFile(html, 'index.html');
 
   assert.equal(failures.length, 0);
@@ -183,7 +198,6 @@ test('checkHtmlFile still reports unsafe anchors after HTML comments', () => {
   assert.equal(failures[0].reason, 'missing rel attribute');
   assert.equal(failures[0].line, 2);
 });
-
 test('run scans nested html files and reports file count on success', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-pass-'));
 
