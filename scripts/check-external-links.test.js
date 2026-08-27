@@ -136,6 +136,22 @@ test('checkHtmlFile fails for unquoted target=_blank when rel is missing', () =>
   assert.equal(failures[0].reason, 'missing rel attribute');
 });
 
+test('checkHtmlFile ignores data-target attributes', () => {
+  const html = '<a href="https://example.com" data-target="_blank">ok</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile does not treat data-rel as rel', () => {
+  const html =
+    '<a href="https://example.com" target="_blank" data-rel="noopener noreferrer">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+});
+
 test('checkHtmlFile fails for single-quoted target=_blank when rel is missing', () => {
   const html = "<a href='https://example.com' target='_blank'>bad</a>";
   const failures = checkHtmlFile(html, 'index.html');
