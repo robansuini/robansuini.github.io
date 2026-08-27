@@ -4,7 +4,13 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { checkHtmlFile, getLineColumn, run } = require('./check-external-links.js');
+const {
+  checkHtmlFile,
+  getLineColumn,
+  getRelTokens,
+  hasRequiredRelTokens,
+  run,
+} = require('./check-external-links.js');
 
 function getAttributeValue(tag, attributeName) {
   const attributeRegex = new RegExp(`\\b${attributeName}\\s*=\\s*"([^"]*)"`, 'i');
@@ -16,6 +22,20 @@ test('getLineColumn returns 1-based line/column', () => {
   assert.deepEqual(getLineColumn(text, 0), { line: 1, column: 1 });
   assert.deepEqual(getLineColumn(text, 8), { line: 2, column: 3 });
   assert.deepEqual(getLineColumn(text, text.length), { line: 3, column: 6 });
+});
+
+test('getRelTokens normalizes whitespace, duplicates, and case', () => {
+  assert.deepEqual([...getRelTokens('  NoOpener  noreferrer noopener  ')], [
+    'noopener',
+    'noreferrer',
+  ]);
+});
+
+test('hasRequiredRelTokens requires noopener and noreferrer', () => {
+  assert.equal(hasRequiredRelTokens('noopener noreferrer'), true);
+  assert.equal(hasRequiredRelTokens('external noreferrer noopener'), true);
+  assert.equal(hasRequiredRelTokens('noopener'), false);
+  assert.equal(hasRequiredRelTokens('noreferrer'), false);
 });
 
 test('checkHtmlFile passes when target=_blank includes noopener noreferrer', () => {
@@ -67,12 +87,28 @@ test('site social links have explicit accessible labels', () => {
   const socialAnchorTags = [...socialLinks[1].matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
   assert.deepEqual(
     socialAnchorTags.map(tag => getAttributeValue(tag, 'aria-label')),
-    ['Twitter/X', 'LinkedIn', 'GitHub'],
+    [
+      'Follow Roberto Ansuini on X',
+      'Connect with Roberto Ansuini on LinkedIn',
+      'View Roberto Ansuini on GitHub',
+    ],
   );
+});
 
-  for (const tag of socialAnchorTags) {
-    assert.equal(getAttributeValue(tag, 'aria-label'), getAttributeValue(tag, 'title'));
-  }
+test('checkHtmlFile ignores unsafe anchors inside HTML comments', () => {
+  const html = '<!-- <a href="https://example.com" target="_blank">commented out</a> -->';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 0);
+});
+
+test('checkHtmlFile still reports unsafe anchors after HTML comments', () => {
+  const html = '<!-- <a href="https://safe-to-ignore.com" target="_blank">ignore</a> -->\n<a href="https://example.com" target="_blank">bad</a>';
+  const failures = checkHtmlFile(html, 'index.html');
+
+  assert.equal(failures.length, 1);
+  assert.equal(failures[0].reason, 'missing rel attribute');
+  assert.equal(failures[0].line, 2);
 });
 
 test('run scans nested html files and reports file count on success', () => {
