@@ -94,6 +94,14 @@ function getLineColumn(text, index) {
   return { line, column };
 }
 
+function shouldSkipDirectory(entry) {
+  return entry.isDirectory() && SKIP_DIRS.has(entry.name);
+}
+
+function isHtmlFile(entry) {
+  return entry.isFile() && entry.name.endsWith('.html');
+}
+
 function findHtmlCommentRanges(html) {
   const ranges = [];
   let searchIndex = 0;
@@ -143,7 +151,7 @@ function findHtmlFiles(dir) {
   const files = [];
 
   for (const entry of entries) {
-    if (SKIP_DIRS.has(entry.name)) {
+    if (shouldSkipDirectory(entry)) {
       continue;
     }
 
@@ -153,7 +161,7 @@ function findHtmlFiles(dir) {
       continue;
     }
 
-    if (entry.isFile() && entry.name.endsWith('.html')) {
+    if (isHtmlFile(entry)) {
       files.push(fullPath);
     }
   }
@@ -248,9 +256,11 @@ module.exports = {
   findHtmlFiles,
   getBlankTargetRelFailureReason,
   getLineColumn,
+  isHtmlFile,
   getRelTokens,
   hasRequiredRelTokens,
   run,
+  shouldSkipDirectory,
 };
 
 if (require.main === module) {
