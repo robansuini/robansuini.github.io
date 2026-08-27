@@ -12,6 +12,7 @@ Personal website of Roberto Ansuini - Engineering manager, leadership toolkit cr
 - **GitHub Pages** - Deployed automatically from `master` branch
 - **Font Awesome** - Icons
 - **Plausible Analytics** - Privacy-friendly analytics
+- **robots.txt + sitemap.xml** - Search crawler metadata for the canonical homepage
 
 ## 📝 Content
 
@@ -53,4 +54,4 @@ Personal site - all rights reserved.
 
 ---
 
-**Last updated:** February 2026 (v9 - Link security hardening + CI checks)
+**Last updated:** May 2026 (v10 - Sitemap coverage)
