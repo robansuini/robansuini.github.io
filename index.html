@@ -70,6 +70,11 @@
             color: var(--primary);
         }
 
+        a:focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 4px;
+        }
+
         section {
             margin-bottom: 64px;
         }
@@ -174,12 +179,33 @@
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
         }
 
+        .cta-box a:focus-visible {
+            outline-color: white;
+        }
+
         footer {
             border-top: 1px solid var(--border);
             padding: 40px 0;
             text-align: center;
             color: var(--text-light);
             font-size: 0.95rem;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .social-links a,
+            .project-card,
+            .project-link,
+            .btn {
+                transition: none;
+            }
+
+            .project-link:hover {
+                gap: 6px;
+            }
+
+            .btn:hover {
+                transform: none;
+            }
         }
 
         @media (max-width: 640px) {
@@ -212,9 +238,9 @@
                 <h1>Roberto Ansuini</h1>
                 <p class="tagline">Engineering manager since 2011. Building tools to help engineering leaders grow their teams.</p>
                 <div class="social-links">
-                    <a href="https://x.com/robansuini" title="Twitter/X" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-x-twitter"></i></a>
-                    <a href="https://linkedin.com/in/robansuini" title="LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-linkedin"></i></a>
-                    <a href="https://github.com/robansuini" title="GitHub" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
+                    <a href="https://x.com/robansuini" title="Twitter/X" aria-label="Follow Roberto Ansuini on X" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="https://linkedin.com/in/robansuini" title="LinkedIn" aria-label="Connect with Roberto Ansuini on LinkedIn" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-linkedin"></i></a>
+                    <a href="https://github.com/robansuini" title="GitHub" aria-label="View Roberto Ansuini on GitHub" target="_blank" rel="noopener noreferrer"><i class="fa-brands fa-github"></i></a>
                 </div>
             </div>
         </header>
@@ -269,7 +295,7 @@
         <div class="cta-box">
             <h3>Get leadership insights in your inbox</h3>
             <p>Real challenges, practical approaches, no fluff. Delivered weekly.</p>
-            <a href="https://the.leadingintech.email/subscribe?utm_campaign=robansuini&utm_source=website" class="btn">
+            <a href="https://the.leadingintech.email/subscribe?utm_campaign=robansuini&utm_source=website" class="btn" target="_blank" rel="noopener noreferrer">
                 Subscribe to the Newsletter
             </a>
         </div>
