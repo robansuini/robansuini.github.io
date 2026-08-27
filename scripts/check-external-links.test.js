@@ -6,6 +6,8 @@ const path = require('node:path');
 
 const {
   checkHtmlFile,
+  findAnchorTags,
+  getBlankTargetRelFailureReason,
   getLineColumn,
   getRelTokens,
   hasRequiredRelTokens,
@@ -22,6 +24,47 @@ test('getLineColumn returns 1-based line/column', () => {
   assert.deepEqual(getLineColumn(text, 0), { line: 1, column: 1 });
   assert.deepEqual(getLineColumn(text, 8), { line: 2, column: 3 });
   assert.deepEqual(getLineColumn(text, text.length), { line: 3, column: 6 });
+});
+
+test('findAnchorTags returns tag text and source indexes', () => {
+  const html = '<main><a href="/">home</a><p>text</p><a href="/about">about</a></main>';
+
+  assert.deepEqual(findAnchorTags(html), [
+    { tag: '<a href="/">', index: 6 },
+    { tag: '<a href="/about">', index: 37 },
+  ]);
+});
+
+test('findAnchorTags preserves quoted greater-than characters inside attributes', () => {
+  const html = '<a href="https://example.com?q=1>0" aria-label="1 > 0">math</a>';
+
+  assert.deepEqual(findAnchorTags(html), [
+    { tag: '<a href="https://example.com?q=1>0" aria-label="1 > 0">', index: 0 },
+  ]);
+});
+
+test('getBlankTargetRelFailureReason ignores non-blank targets', () => {
+  assert.equal(getBlankTargetRelFailureReason('<a href="/local">local</a>'), null);
+  assert.equal(getBlankTargetRelFailureReason('<a href="/local" target="_self">local</a>'), null);
+});
+
+test('getBlankTargetRelFailureReason validates required rel tokens', () => {
+  assert.equal(
+    getBlankTargetRelFailureReason('<a href="https://example.com" target="_blank">bad</a>'),
+    'missing rel attribute',
+  );
+  assert.equal(
+    getBlankTargetRelFailureReason(
+      '<a href="https://example.com" target="_blank" rel="noopener external">bad</a>',
+    ),
+    'rel must include both noopener and noreferrer',
+  );
+  assert.equal(
+    getBlankTargetRelFailureReason(
+      '<a href="https://example.com" target="_BLANK" rel="NOOPENER noreferrer external">ok</a>',
+    ),
+    null,
+  );
 });
 
 test('getRelTokens normalizes whitespace, duplicates, and case', () => {
