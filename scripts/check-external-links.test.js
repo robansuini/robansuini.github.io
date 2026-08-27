@@ -7,11 +7,14 @@ const path = require('node:path');
 const {
   checkHtmlFile,
   findAnchorTags,
+  findHtmlFiles,
   getBlankTargetRelFailureReason,
   getLineColumn,
   getRelTokens,
   hasRequiredRelTokens,
+  isHtmlFile,
   run,
+  shouldSkipDirectory,
 } = require('./check-external-links.js');
 
 function getAttributeValue(tag, attributeName) {
@@ -24,6 +27,17 @@ test('getLineColumn returns 1-based line/column', () => {
   assert.deepEqual(getLineColumn(text, 0), { line: 1, column: 1 });
   assert.deepEqual(getLineColumn(text, 8), { line: 2, column: 3 });
   assert.deepEqual(getLineColumn(text, text.length), { line: 3, column: 6 });
+});
+
+test('file discovery predicates identify scannable html files and skipped directories', () => {
+  assert.equal(shouldSkipDirectory(dirent('.git', 'directory')), true);
+  assert.equal(shouldSkipDirectory(dirent('node_modules', 'directory')), true);
+  assert.equal(shouldSkipDirectory(dirent('.well-known', 'directory')), false);
+  assert.equal(shouldSkipDirectory(dirent('.git', 'file')), false);
+
+  assert.equal(isHtmlFile(dirent('index.html', 'file')), true);
+  assert.equal(isHtmlFile(dirent('index.HTML', 'file')), false);
+  assert.equal(isHtmlFile(dirent('docs.html', 'directory')), false);
 });
 
 test('findAnchorTags returns tag text and source indexes', () => {
@@ -236,6 +250,27 @@ test('run scans hidden web dirs but skips internal directories', () => {
   }
 });
 
+test('findHtmlFiles returns nested html files and skips internal directories', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-find-'));
+
+  try {
+    fs.mkdirSync(path.join(tempDir, 'nested'));
+    fs.mkdirSync(path.join(tempDir, '.git'));
+
+    fs.writeFileSync(path.join(tempDir, 'index.html'), '', 'utf8');
+    fs.writeFileSync(path.join(tempDir, 'notes.txt'), '', 'utf8');
+    fs.writeFileSync(path.join(tempDir, 'nested', 'page.html'), '', 'utf8');
+    fs.writeFileSync(path.join(tempDir, '.git', 'ignored.html'), '', 'utf8');
+
+    assert.deepEqual(
+      findHtmlFiles(tempDir).map(filePath => path.relative(tempDir, filePath)).sort(),
+      ['index.html', path.join('nested', 'page.html')],
+    );
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
+});
+
 test('run returns failure when no html files are present', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'link-check-empty-'));
 
@@ -249,3 +284,11 @@ test('run returns failure when no html files are present', () => {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+function dirent(name, type) {
+  return {
+    name,
+    isDirectory: () => type === 'directory',
+    isFile: () => type === 'file',
+  };
+}
