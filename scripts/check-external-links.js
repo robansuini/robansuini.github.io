@@ -6,8 +6,6 @@ const path = require('node:path');
 const SKIP_DIRS = new Set(['.git', 'node_modules']);
 const REQUIRED_REL_TOKENS = new Set(['noopener', 'noreferrer']);
 
-const anchorTagRegex = /<a\b[^>]*>/gi;
-
 function getAttributeValue(tag, attributeName) {
   const attributeRegex = new RegExp(
     `(?:^|\\s)${attributeName}\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s"'=<>\`]+))`,
@@ -19,6 +17,72 @@ function getAttributeValue(tag, attributeName) {
   }
 
   return match[1] ?? match[2] ?? match[3] ?? '';
+}
+
+function findAnchorTags(html) {
+  const tags = [];
+  const anchorStartRegex = /<a\b/gi;
+  let match;
+
+  while ((match = anchorStartRegex.exec(html)) !== null) {
+    const index = match.index ?? 0;
+    const endIndex = findTagEnd(html, anchorStartRegex.lastIndex);
+    if (endIndex === -1) {
+      continue;
+    }
+
+    tags.push({
+      tag: html.slice(index, endIndex + 1),
+      index,
+    });
+    anchorStartRegex.lastIndex = endIndex + 1;
+  }
+
+  return tags;
+}
+
+function findTagEnd(html, startIndex) {
+  let quote = null;
+
+  for (let index = startIndex; index < html.length; index += 1) {
+    const char = html[index];
+
+    if (quote !== null) {
+      if (char === quote) {
+        quote = null;
+      }
+      continue;
+    }
+
+    if (char === '"' || char === "'") {
+      quote = char;
+      continue;
+    }
+
+    if (char === '>') {
+      return index;
+    }
+  }
+
+  return -1;
+}
+
+function getBlankTargetRelFailureReason(tag) {
+  const target = getAttributeValue(tag, 'target');
+  if (!target || target.toLowerCase() !== '_blank') {
+    return null;
+  }
+
+  const rel = getAttributeValue(tag, 'rel');
+  if (rel === null) {
+    return 'missing rel attribute';
+  }
+
+  if (hasRequiredRelTokens(rel)) {
+    return null;
+  }
+
+  return 'rel must include both noopener and noreferrer';
 }
 
 function getLineColumn(text, index) {
@@ -100,45 +164,27 @@ function findHtmlFiles(dir) {
 function checkHtmlFile(html, filePath) {
   const failures = [];
   const commentRanges = findHtmlCommentRanges(html);
-  let match;
 
-  while ((match = anchorTagRegex.exec(html)) !== null) {
-    if (isIndexInRanges(match.index, commentRanges)) {
+  for (const { tag, index } of findAnchorTags(html)) {
+    if (isIndexInRanges(index, commentRanges)) {
       continue;
     }
 
-    const tag = match[0];
+    const reason = getBlankTargetRelFailureReason(tag);
 
-    const target = getAttributeValue(tag, 'target');
-    if (!target || target.toLowerCase() !== '_blank') {
+    if (reason === null) {
       continue;
     }
 
-    const location = getLineColumn(html, match.index);
-
-    const rel = getAttributeValue(tag, 'rel');
-    if (rel === null) {
-      failures.push({
-        filePath,
-        index: match.index,
-        line: location.line,
-        column: location.column,
-        reason: 'missing rel attribute',
-        tag,
-      });
-      continue;
-    }
-
-    if (!hasRequiredRelTokens(rel)) {
-      failures.push({
-        filePath,
-        index: match.index,
-        line: location.line,
-        column: location.column,
-        reason: 'rel must include both noopener and noreferrer',
-        tag,
-      });
-    }
+    const location = getLineColumn(html, index);
+    failures.push({
+      filePath,
+      index,
+      line: location.line,
+      column: location.column,
+      reason,
+      tag,
+    });
   }
 
   return failures;
@@ -158,7 +204,6 @@ function run(rootDir = process.cwd()) {
   const failures = [];
   for (const filePath of htmlFiles) {
     const html = fs.readFileSync(filePath, 'utf8');
-    anchorTagRegex.lastIndex = 0;
     failures.push(...checkHtmlFile(html, path.relative(rootDir, filePath)));
   }
 
@@ -199,7 +244,9 @@ function main() {
 
 module.exports = {
   checkHtmlFile,
+  findAnchorTags,
   findHtmlFiles,
+  getBlankTargetRelFailureReason,
   getLineColumn,
   getRelTokens,
   hasRequiredRelTokens,
