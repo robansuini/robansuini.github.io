@@ -191,6 +191,23 @@
             font-size: 0.95rem;
         }
 
+        @media (prefers-reduced-motion: reduce) {
+            .social-links a,
+            .project-card,
+            .project-link,
+            .btn {
+                transition: none;
+            }
+
+            .project-link:hover {
+                gap: 6px;
+            }
+
+            .btn:hover {
+                transform: none;
+            }
+        }
+
         @media (max-width: 640px) {
             .header-content h1 {
                 font-size: 2rem;
