@@ -199,6 +199,21 @@ test('site social links have explicit accessible labels', () => {
   );
 });
 
+test('third-party Font Awesome stylesheet is pinned with subresource integrity', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const stylesheet = html.match(
+    /<link\b[^>]*href="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/font-awesome\/6\.5\.1\/css\/all\.min\.css"[^>]*>/,
+  )?.[0];
+
+  assert.ok(stylesheet, 'expected the pinned Font Awesome stylesheet to exist');
+  assert.equal(
+    getAttributeValue(stylesheet, 'integrity'),
+    'sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==',
+  );
+  assert.equal(getAttributeValue(stylesheet, 'crossorigin'), 'anonymous');
+  assert.equal(getAttributeValue(stylesheet, 'referrerpolicy'), 'no-referrer');
+});
+
 test('checkHtmlFile ignores unsafe anchors inside HTML comments', () => {
   const html = '<!-- <a href="https://example.com" target="_blank">commented out</a> -->';
   const failures = checkHtmlFile(html, 'index.html');
