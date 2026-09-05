@@ -1,14 +1,13 @@
-# Work item: Pin third-party stylesheet content
+# Work item: Declare the canonical homepage URL
 
 ## Goal
 
-Prevent an unexpected CDN response from executing as trusted Font Awesome CSS on the site.
+Tell search engines which homepage URL should be indexed when the site is reached through alternate GitHub Pages URLs.
 
 ## Acceptance criteria
 
-- Pin the Font Awesome 6.5.1 stylesheet with a SHA-512 Subresource Integrity digest.
-- Fetch the stylesheet anonymously without sending referrer data.
-- Add regression coverage for the URL, digest, and cross-origin attributes.
+- Declare `https://robansuini.com/` as the homepage canonical URL.
+- Add regression coverage that detects a missing or changed canonical URL.
 
 ## Validation
 
