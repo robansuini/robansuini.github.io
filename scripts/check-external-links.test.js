@@ -199,6 +199,14 @@ test('site social links have explicit accessible labels', () => {
   );
 });
 
+test('homepage declares its absolute canonical URL', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const canonical = html.match(/<link\b[^>]*rel="canonical"[^>]*>/)?.[0];
+
+  assert.ok(canonical, 'expected a canonical link to exist');
+  assert.equal(getAttributeValue(canonical, 'href'), 'https://robansuini.com/');
+});
+
 test('third-party Font Awesome stylesheet is pinned with subresource integrity', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const stylesheet = html.match(
