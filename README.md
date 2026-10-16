@@ -32,6 +32,12 @@ python3 -m http.server 8000
 
 **Quality checks:**
 ```bash
+npm run verify
+```
+
+Or run the same steps individually:
+
+```bash
 node scripts/check-external-links.js
 node --test scripts/check-external-links.test.js
 ```
