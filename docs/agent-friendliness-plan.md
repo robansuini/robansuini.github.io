@@ -21,7 +21,7 @@ Roberto (`robansuini`) rarely leaves inline review comments on agent PRs. Feedba
 **Implied review bar (inferred, not written as policy):**
 
 1. `node scripts/check-external-links.js` must pass.
-2. `node --test scripts/check-external-links.test.js` must pass (count grows as tests are added).
+2. `node --test scripts/check-external-links.test.js` must pass (count (28 as of Oct 2026)).
 3. Stacked branches must be rebased without breaking the above.
 4. Human judgment on copy/brand is light-touch once CI is green.
 
