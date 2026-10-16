@@ -193,6 +193,8 @@ python3 -m http.server 8000   # manual preview
 
 ## Appendix B — Related draft PRs
 
-- Plan: `cursor/agent-friendliness-plan-b1a3`
-- Verification skill + npm scripts: `cursor/verification-skill-b1a3`
-- ESLint: `cursor/eslint-scripts-b1a3`
+- Plan: https://github.com/robansuini/robansuini.github.io/pull/34
+- Verification skill + npm scripts: https://github.com/robansuini/robansuini.github.io/pull/35
+- ESLint: https://github.com/robansuini/robansuini.github.io/pull/36
+
+Merge order suggestion: **#35** (verify entrypoint + skill) then **#36** (lint; rebase to add lint into shared `package.json`), or squash both tooling PRs if conflict-prone.
