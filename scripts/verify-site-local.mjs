@@ -30,39 +30,78 @@ async function fetchText(url) {
 
 async function doctor() {
   const probe = await fetchText(`http://${HOST}:${PORT}/`).catch(() => null);
-  if (probe && probe.status === 200) {
-    return { ok: false, reason: `Something already serves http://${HOST}:${PORT}/ (status ${probe.status}). Pick another VERIFY_SITE_PORT.` };
+  if (probe) {
+    return {
+      ok: false,
+      reason: `Something already serves http://${HOST}:${PORT}/ (HTTP ${probe.status}). Pick another VERIFY_SITE_PORT.`,
+    };
   }
   return { ok: true };
 }
 
 function startServer(cwd) {
-  const child = spawn('python3', ['-m', 'http.server', String(PORT), '--bind', HOST], {
+  return spawn('python3', ['-m', 'http.server', String(PORT), '--bind', HOST], {
     cwd,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
-  return child;
 }
 
-async function waitForServer(maxMs = 8000) {
+function attachServerFailureHandlers(server) {
+  let spawnError = null;
+  let earlyExit = null;
+  let stderr = '';
+
+  server.on('error', (err) => {
+    spawnError = err;
+  });
+  server.stderr.on('data', (chunk) => {
+    stderr += chunk.toString();
+  });
+  server.on('exit', (code, signal) => {
+    if (code !== null && code !== 0) {
+      earlyExit = { code, signal, stderr };
+    }
+  });
+
+  return () => {
+    if (spawnError) {
+      throw new Error(`Failed to start python3 http.server: ${spawnError.message}`);
+    }
+    if (earlyExit) {
+      const detail = earlyExit.stderr.trim() || `exit code ${earlyExit.code}`;
+      throw new Error(`python3 http.server exited before ready (${detail})`);
+    }
+  };
+}
+
+async function waitForServer(server, maxMs = 8000) {
+  const checkServer = attachServerFailureHandlers(server);
   const deadline = Date.now() + maxMs;
+
   while (Date.now() < deadline) {
+    checkServer();
+
     try {
       const res = await fetchText(`http://${HOST}:${PORT}/`);
       if (res.status === 200) {
         return res;
       }
     } catch {
-      // retry
+      // connection refused while starting
     }
     await delay(200);
   }
-  throw new Error(`Server did not become ready on http://${HOST}:${PORT}/ within ${maxMs}ms`);
+
+  checkServer();
+  throw new Error(`Server did not return HTTP 200 on http://${HOST}:${PORT}/ within ${maxMs}ms`);
 }
 
-async function runNodeVerify() {
-  const child = spawn('npm', ['run', 'verify'], { stdio: ['ignore', 'pipe', 'pipe'], shell: true });
-  const out = await new Promise((resolve, reject) => {
+async function runNodeVerify(cwd) {
+  const child = spawn('npm', ['run', 'verify'], {
+    cwd,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  return new Promise((resolve, reject) => {
     let stdout = '';
     let stderr = '';
     child.stdout.on('data', (d) => {
@@ -76,7 +115,6 @@ async function runNodeVerify() {
     });
     child.on('error', reject);
   });
-  return out;
 }
 
 async function main() {
@@ -90,24 +128,31 @@ async function main() {
   }
 
   const server = startServer(repoRoot);
-  let homepage;
+  let exitCode = 0;
+
   try {
-    homepage = await waitForServer();
+    const homepage = await waitForServer(server);
     await writeFile(`${EVIDENCE_DIR}/homepage-snippet.txt`, homepage.body.slice(0, 2000));
-    const verify = await runNodeVerify();
+
+    const verify = await runNodeVerify(repoRoot);
     await writeFile(`${EVIDENCE_DIR}/npm-verify.log`, `${verify.stdout}\n${verify.stderr}`);
+
     if (verify.code !== 0) {
       console.error('npm run verify failed');
       console.error(verify.stderr || verify.stdout);
-      process.exit(verify.code ?? 1);
-    }
-    if (!homepage.body.includes('<title>Roberto Ansuini')) {
+      exitCode = verify.code ?? 1;
+    } else if (!homepage.body.includes('<title>Roberto Ansuini')) {
       console.error('Homepage title check failed');
-      process.exit(1);
+      exitCode = 1;
+    } else {
+      console.log(`Verification OK. Evidence: ${EVIDENCE_DIR}`);
     }
-    console.log(`Verification OK. Evidence: ${EVIDENCE_DIR}`);
   } finally {
     server.kill('SIGTERM');
+  }
+
+  if (exitCode !== 0) {
+    process.exit(exitCode);
   }
 }
 
