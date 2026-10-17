@@ -1,0 +1,10 @@
+{
+  "name": "robansuini-site",
+  "private": true,
+  "description": "Static site and Node quality checks for robansuini.com",
+  "scripts": {
+    "check:links": "node scripts/check-external-links.js",
+    "test": "node --test scripts/check-external-links.test.js",
+    "verify": "npm run check:links && npm test"
+  }
+}

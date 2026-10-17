@@ -18,8 +18,5 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Validate target="_blank" links are safe
-        run: node scripts/check-external-links.js
-
-      - name: Run external-link checker regression tests
-        run: node --test scripts/check-external-links.test.js
+      - name: Run site verification (link safety + regression tests)
+        run: npm run verify
