@@ -1,13 +1,14 @@
-# Work item: Declare the canonical homepage URL
+# Work item: Add social sharing metadata
 
 ## Goal
 
-Tell search engines which homepage URL should be indexed when the site is reached through alternate GitHub Pages URLs.
+Give social platforms explicit homepage metadata so shared links render with a useful title and description.
 
 ## Acceptance criteria
 
-- Declare `https://robansuini.com/` as the homepage canonical URL.
-- Add regression coverage that detects a missing or changed canonical URL.
+- Declare Open Graph type, URL, title, and description metadata.
+- Declare a compact Twitter card type.
+- Add regression coverage that detects missing or changed social metadata.
 
 ## Validation
 
