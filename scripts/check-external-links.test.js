@@ -207,6 +207,34 @@ test('homepage declares its absolute canonical URL', () => {
   assert.equal(getAttributeValue(canonical, 'href'), 'https://robansuini.com/');
 });
 
+test('homepage declares social sharing metadata', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const metadata = Object.fromEntries(
+    [...html.matchAll(/<meta\b[^>]*(?:property|name)="([^"]+)"[^>]*>/g)].map(match => [
+      match[1],
+      getAttributeValue(match[0], 'content'),
+    ]),
+  );
+
+  assert.deepEqual(
+    {
+      'og:type': metadata['og:type'],
+      'og:url': metadata['og:url'],
+      'og:title': metadata['og:title'],
+      'og:description': metadata['og:description'],
+      'twitter:card': metadata['twitter:card'],
+    },
+    {
+      'og:type': 'website',
+      'og:url': 'https://robansuini.com/',
+      'og:title': 'Roberto Ansuini - Engineering Leadership & Tools',
+      'og:description':
+        'Engineering manager since 2011. Helping people and technology work better together through practical leadership tools and insights.',
+      'twitter:card': 'summary',
+    },
+  );
+});
+
 test('third-party Font Awesome stylesheet is pinned with subresource integrity', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const stylesheet = html.match(
