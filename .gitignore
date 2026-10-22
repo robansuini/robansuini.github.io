@@ -16,6 +16,9 @@ Thumbs.db
 *.sublime-project
 *.sublime-workspace
 
+# Dependencies
+node_modules/
+
 # Logs
 *.log
 

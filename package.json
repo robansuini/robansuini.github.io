@@ -4,7 +4,13 @@
   "description": "Static site and Node quality checks for robansuini.com",
   "scripts": {
     "check:links": "node scripts/check-external-links.js",
+    "lint": "eslint scripts",
     "test": "node --test scripts/check-external-links.test.js",
-    "verify": "npm run check:links && npm test"
+    "verify": "npm run lint && npm run check:links && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "globals": "^16.4.0"
   }
 }
