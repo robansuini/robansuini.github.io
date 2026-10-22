@@ -50,6 +50,7 @@ function attachServerFailureHandlers(server) {
   let spawnError = null;
   let earlyExit = null;
   let stderr = '';
+  let serverReady = false;
 
   server.on('error', (err) => {
     spawnError = err;
@@ -58,32 +59,40 @@ function attachServerFailureHandlers(server) {
     stderr += chunk.toString();
   });
   server.on('exit', (code, signal) => {
-    if (code !== null && code !== 0) {
+    if (!serverReady && code !== null && code !== 0) {
       earlyExit = { code, signal, stderr };
     }
   });
 
-  return () => {
-    if (spawnError) {
-      throw new Error(`Failed to start python3 http.server: ${spawnError.message}`);
-    }
-    if (earlyExit) {
-      const detail = earlyExit.stderr.trim() || `exit code ${earlyExit.code}`;
-      throw new Error(`python3 http.server exited before ready (${detail})`);
-    }
+  const markReady = () => {
+    serverReady = true;
+  };
+
+  return {
+    assertHealthy() {
+      if (spawnError) {
+        throw new Error(`Failed to start python3 http.server: ${spawnError.message}`);
+      }
+      if (earlyExit) {
+        const detail = earlyExit.stderr.trim() || `exit code ${earlyExit.code}`;
+        throw new Error(`python3 http.server exited before ready (${detail})`);
+      }
+    },
+    markReady,
   };
 }
 
 async function waitForServer(server, maxMs = 8000) {
-  const checkServer = attachServerFailureHandlers(server);
+  const health = attachServerFailureHandlers(server);
   const deadline = Date.now() + maxMs;
 
   while (Date.now() < deadline) {
-    checkServer();
+    health.assertHealthy();
 
     try {
       const res = await fetchText(`http://${HOST}:${PORT}/`);
       if (res.status === 200) {
+        health.markReady();
         return res;
       }
     } catch {
@@ -92,7 +101,7 @@ async function waitForServer(server, maxMs = 8000) {
     await delay(200);
   }
 
-  checkServer();
+  health.assertHealthy();
   throw new Error(`Server did not return HTTP 200 on http://${HOST}:${PORT}/ within ${maxMs}ms`);
 }
 
@@ -128,7 +137,6 @@ async function main() {
   }
 
   const server = startServer(repoRoot);
-  let exitCode = 0;
 
   try {
     const homepage = await waitForServer(server);
@@ -140,23 +148,21 @@ async function main() {
     if (verify.code !== 0) {
       console.error('npm run verify failed');
       console.error(verify.stderr || verify.stdout);
-      exitCode = verify.code ?? 1;
-    } else if (!homepage.body.includes('<title>Roberto Ansuini')) {
-      console.error('Homepage title check failed');
-      exitCode = 1;
-    } else {
-      console.log(`Verification OK. Evidence: ${EVIDENCE_DIR}`);
+      process.exitCode = verify.code ?? 1;
+      return;
     }
+    if (!homepage.body.includes('<title>Roberto Ansuini')) {
+      console.error('Homepage title check failed');
+      process.exitCode = 1;
+      return;
+    }
+    console.log(`Verification OK. Evidence: ${EVIDENCE_DIR}`);
+  } catch (err) {
+    console.error(err);
+    process.exitCode = 1;
   } finally {
     server.kill('SIGTERM');
   }
-
-  if (exitCode !== 0) {
-    process.exit(exitCode);
-  }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+main();
