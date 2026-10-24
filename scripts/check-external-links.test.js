@@ -199,6 +199,18 @@ test('site social links have explicit accessible labels', () => {
   );
 });
 
+test('homepage wraps its primary content in a main landmark', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const mainLandmarks = [...html.matchAll(/<main\b[^>]*>([\s\S]*?)<\/main>/g)];
+
+  assert.equal(mainLandmarks.length, 1, 'expected exactly one main landmark');
+  assert.match(mainLandmarks[0][1], /<section id="about">/);
+  assert.match(mainLandmarks[0][1], /<section id="projects">/);
+  assert.match(mainLandmarks[0][1], /<div class="cta-box">/);
+  assert.ok(html.indexOf('</header>') < mainLandmarks[0].index);
+  assert.ok(mainLandmarks[0].index + mainLandmarks[0][0].length < html.indexOf('<footer>'));
+});
+
 test('homepage declares its absolute canonical URL', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const canonical = html.match(/<link\b[^>]*rel="canonical"[^>]*>/)?.[0];
