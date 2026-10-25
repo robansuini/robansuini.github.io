@@ -1,14 +1,14 @@
-# Work item: Add social sharing metadata
+# Work item: Add a semantic main landmark
 
 ## Goal
 
-Give social platforms explicit homepage metadata so shared links render with a useful title and description.
+Make the homepage's primary content directly discoverable to screen readers and other assistive technology.
 
 ## Acceptance criteria
 
-- Declare Open Graph type, URL, title, and description metadata.
-- Declare a compact Twitter card type.
-- Add regression coverage that detects missing or changed social metadata.
+- Wrap the About, Projects, and newsletter CTA content in exactly one `<main>` landmark.
+- Keep the page header and footer outside the main landmark.
+- Add regression coverage that detects a missing or duplicated main landmark.
 
 ## Validation
 
