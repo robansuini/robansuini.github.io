@@ -211,6 +211,22 @@ test('homepage wraps its primary content in a main landmark', () => {
   assert.ok(mainLandmarks[0].index + mainLandmarks[0][0].length < html.indexOf('<footer>'));
 });
 
+test('homepage offers a skip link before the header with a focusable main target', () => {
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  const body = html.slice(html.indexOf('<body>'));
+  const firstAnchor = findAnchorTags(body)[0];
+  const destination = getAttributeValue(firstAnchor.tag, 'href');
+  const main = body.match(/<main\b[^>]*>/)?.[0];
+
+  assert.equal(getAttributeValue(firstAnchor.tag, 'class'), 'skip-link');
+  assert.ok(firstAnchor.index < body.indexOf('<header>'));
+  assert.ok(destination?.startsWith('#'));
+  assert.ok(main, 'expected a main landmark');
+  assert.equal(getAttributeValue(main, 'id'), destination.slice(1));
+  assert.equal(getAttributeValue(main, 'tabindex'), '-1');
+  assert.match(body, />Skip to main content<\/a>/);
+});
+
 test('homepage declares its absolute canonical URL', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   const canonical = html.match(/<link\b[^>]*rel="canonical"[^>]*>/)?.[0];
