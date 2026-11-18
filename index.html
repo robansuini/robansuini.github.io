@@ -126,12 +126,11 @@
             border-radius: 8px;
             padding: 28px;
             margin-bottom: 24px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color 0.15s ease-out;
         }
 
         .project-card:hover {
             border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
         }
 
         .project-card h3 {
@@ -159,15 +158,14 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 500;
-            transition: gap 0.2s;
         }
 
         .project-link:hover {
-            gap: 10px;
+            text-decoration: underline;
         }
 
         .cta-box {
-            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            background: var(--primary);
             color: white;
             border-radius: 12px;
             padding: 40px;
@@ -193,12 +191,11 @@
             border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: background-color 0.15s ease-out;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            background: var(--bg-alt);
         }
 
         .cta-box a:focus-visible {
@@ -216,17 +213,8 @@
         @media (prefers-reduced-motion: reduce) {
             .social-links a,
             .project-card,
-            .project-link,
             .btn {
                 transition: none;
-            }
-
-            .project-link:hover {
-                gap: 6px;
-            }
-
-            .btn:hover {
-                transform: none;
             }
         }
 
@@ -272,21 +260,21 @@
         <section id="about">
             <h2>About</h2>
             <p class="about-intro">
-                Hi, I'm Roberto—an Engineering Manager passionate about helping people and technology work better together. Great engineering isn't just about code; it's about the people behind it, the systems they build, and the impact they create.
+                Hi, I'm Roberto, an engineering manager. I help people and technology work better together.
             </p>
             <p>
-                My approach is pragmatic and grounded in real-world problem solving. That's why I'm building <strong>leadingin.tech</strong>: practical tools, frameworks, and insights for engineering leaders who want to grow teams, stay focused on outcomes, and avoid burnout.
+                That's why I'm building <strong>leadingin.tech</strong>: practical tools and frameworks for engineering leaders who want to grow their teams.
             </p>
         </section>
 
         <section id="projects">
-            <h2>What I'm Building</h2>
+            <h2>What I'm building</h2>
             
             <div class="project-card">
                 <h3>leadingin.tech</h3>
                 <p class="project-meta">Practical toolkit for engineering leaders</p>
                 <p>
-                    A collection of tools, frameworks, and resources to help engineering managers grow their teams and themselves. Built from real experience, not theory. No fluff, just practical insights that actually help.
+                    A collection of tools, frameworks, and resources to help engineering managers grow their teams and themselves.
                 </p>
                 <a href="https://leadingin.tech" class="project-link" target="_blank" rel="noopener noreferrer">
                     Visit the toolkit <i class="fa-solid fa-arrow-right"></i>
@@ -297,7 +285,7 @@
                 <h3>the.leadingintech.email</h3>
                 <p class="project-meta">Weekly newsletter on leadership in tech</p>
                 <p>
-                    Personal observations on engineering leadership, team dynamics, and the challenges nobody warns you about. Not prescriptive how-tos—honest reflections on what actually works (and what doesn't).
+                    Personal observations on engineering leadership, team dynamics, and the challenges nobody warns you about.
                 </p>
                 <a href="https://the.leadingintech.email" class="project-link" target="_blank" rel="noopener noreferrer">
                     Read the newsletter <i class="fa-solid fa-arrow-right"></i>
@@ -308,7 +296,7 @@
                 <h3>agent-skills</h3>
                 <p class="project-meta">Open-source skills for AI coding agents</p>
                 <p>
-                    AgentSkills.io-compatible skills for Claude Code, OpenClaw, Windsurf, and other AI coding tools. Automation and workflows that actually ship.
+                    AgentSkills.io-compatible skills for Claude Code, OpenClaw, Windsurf, and other AI coding tools.
                 </p>
                 <a href="https://github.com/robansuini/agent-skills" class="project-link" target="_blank" rel="noopener noreferrer">
                     Explore the repository <i class="fa-solid fa-arrow-right"></i>
@@ -340,15 +328,15 @@
 
         <div class="cta-box">
             <h3>Get leadership insights in your inbox</h3>
-            <p>Real challenges, practical approaches, no fluff. Delivered weekly.</p>
+            <p>One email a week on engineering leadership.</p>
             <a href="https://the.leadingintech.email/subscribe?utm_campaign=robansuini&utm_source=website" class="btn" target="_blank" rel="noopener noreferrer">
-                Subscribe to the Newsletter
+                Subscribe to the newsletter
             </a>
         </div>
         </main>
 
         <footer>
-            <p>© 2026 Roberto Ansuini · Always evolving, always learning</p>
+            <p>© 2026 Roberto Ansuini</p>
         </footer>
     </div>
 
